@@ -1,0 +1,32 @@
+# Core LangChain/LangGraph
+langgraph>=1.0.0
+langchain>=1.0.0
+langchain-groq>=1.0.0
+langchain-openai>=0.3.0
+langchain-mcp-adapters>=0.3.0
+langchain-google-genai>=1.0.0 
+mcp>=1.0.0
+
+# Document Parsing
+PyPDF2>=3.0.0
+python-docx>=1.0.0
+pdfplumber>=0.10.0
+
+# Web Framework
+fastapi>=0.130.0
+uvicorn>=0.45.0
+jinja2>=3.0.0
+python-multipart>=0.0.9
+
+# Database & Persistence
+psycopg[binary]>=3.3.0
+psycopg_pool>=3.3.0
+langgraph-checkpoint-postgres>=3.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+nest_asyncio>=1.6.0
+requests>=2.34.0
+
+# PDF Generation
+fpdf2>=2.7.0

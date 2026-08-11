@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History — StudyMate</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1><span>Study</span><span class="mark">Mate</span></h1>
+                </div>
+                <div class="header-actions">
+                    <span id="userDisplay" class="user-badge" style="display: none;"></span>
+                    <a href="/" class="nav-link">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+                        <span class="label">Back</span>
+                    </a>
+                    <button class="nav-link" id="logoutBtn" style="display: none;">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                        <span class="label">Log out</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="history-card">
+                <h2>Your study history</h2>
+                <p class="history-subtitle">Every lecture you've turned into study materials, in one place</p>
+
+                <div id="historyList">
+                    <!-- Loading state -->
+                    <div id="loadingState" class="history-empty">
+                        <svg class="empty-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+                        <p>Loading your history…</p>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="emptyState" class="history-empty" style="display: none;">
+                        <svg class="empty-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <h3>No study sessions yet</h3>
+                        <p>Upload your first lecture to get started</p>
+                        <a href="/" class="btn btn-primary" style="margin-top: 18px; display: inline-flex;">
+                            Start new session
+                        </a>
+                    </div>
+
+                    <!-- Sessions list -->
+                    <div id="sessionsList" style="display: none;">
+                        <div class="session-grid" id="sessionGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>StudyMate — built on LangGraph, MCP, and FastAPI</p>
+        </footer>
+    </div>
+
+    <script>
+        // Check auth and load history
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const authResponse = await fetch('/api/check-auth');
+                const authData = await authResponse.json();
+
+                if (!authData.authenticated) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                document.getElementById('userDisplay').innerHTML =
+                    '<span class="avatar">' + authData.username.charAt(0) + '</span>' + authData.username;
+                document.getElementById('userDisplay').style.display = 'inline-flex';
+                document.getElementById('logoutBtn').style.display = 'inline-flex';
+
+                await loadHistory();
+
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/login';
+            }
+        });
+
+        async function loadHistory() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const sessionsList = document.getElementById('sessionsList');
+            const sessionGrid = document.getElementById('sessionGrid');
+
+            try {
+                const response = await fetch('/api/user-history');
+                const data = await response.json();
+
+                loadingState.style.display = 'none';
+
+                if (data.success && data.sessions.length > 0) {
+                    sessionsList.style.display = 'block';
+                    sessionGrid.innerHTML = '';
+
+                    data.sessions.forEach(session => {
+                        const item = document.createElement('div');
+                        item.className = 'session-item';
+
+                        const date = new Date(session.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        item.innerHTML = `
+                            <div class="session-info">
+                                <span class="session-name">${session.document_name || 'Untitled document'}</span>
+                                <span class="session-meta">
+                                    <span class="thread-id">${session.thread_id}</span>
+                                    &nbsp;·&nbsp; ${date}
+                                </span>
+                            </div>
+                            <div class="session-actions">
+                                <a href="/api/download/${session.thread_id}" class="btn-view" target="_blank">
+                                    View PDF
+                                </a>
+                            </div>
+                        `;
+
+                        sessionGrid.appendChild(item);
+                    });
+                } else {
+                    emptyState.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Error loading history:', error);
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+                document.querySelector('#emptyState p').textContent = 'Error loading your history. Please try again.';
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            window.location.href = '/api/logout';
+        });
+    </script>
+</body>
+</html>

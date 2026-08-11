@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+downloads/
+*.pdf
+*.docx
+*.db
+*.sqlite3
+checkpoints.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
+
+# Test files
+test.py
+check_models.py
+test_*.py

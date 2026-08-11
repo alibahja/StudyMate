@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Study Companion</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">📚</span>
+                    <h1>Study Companion</h1>
+                </div>
+                <div class="header-actions">
+                    <span id="userDisplay" class="user-badge" style="display: none;"></span>
+                    <a href="/history" class="btn btn-secondary btn-sm" id="historyBtn">
+                        <span>📋</span> History
+                    </a>
+                    <button class="btn btn-secondary btn-sm" id="newChatBtn">
+                        <span>➕</span> New Session
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="logoutBtn" style="display: none;">
+                        <span>🚪</span> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-card">
+                    <div class="upload-icon">📄</div>
+                    <h2>Upload Your Lecture</h2>
+                    <p class="upload-subtitle">Upload a PDF or Word document to generate study materials</p>
+                    
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" accept=".pdf,.docx" hidden>
+                        <div class="upload-zone-content">
+                            <span class="upload-zone-icon">📤</span>
+                            <p><strong>Click to upload</strong> or drag and drop</p>
+                            <p class="upload-zone-hint">PDF or DOCX files only</p>
+                        </div>
+                    </div>
+                    
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <span class="file-name" id="fileName">lecture.pdf</span>
+                        <span class="file-size" id="fileSize">2.4 MB</span>
+                        <button class="btn btn-sm btn-remove" id="removeFileBtn">✕</button>
+                    </div>
+
+                    <div class="upload-options">
+                        <textarea 
+                            id="userQuery" 
+                            placeholder="Optional: Add specific instructions for the AI (e.g., 'Focus on Chapter 3', 'Explain in simple terms')"
+                            rows="2"
+                        ></textarea>
+                        <button class="btn btn-primary btn-lg" id="uploadBtn" disabled>
+                            <span>🚀</span> Generate Study Materials
+                        </button>
+                    </div>
+
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p class="progress-text" id="progressText">Processing...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <!-- Thread Info -->
+                <div class="thread-info">
+                    <span class="thread-id" id="threadIdDisplay">Thread: study_abc123</span>
+                    <button class="btn btn-sm btn-download" id="downloadBtn">
+                        ⬇️ Download PDF
+                    </button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="explanation">Explanation</button>
+                    <button class="tab-btn" data-tab="summary">Summary</button>
+                    <button class="tab-btn" data-tab="mcqs">MCQs</button>
+                    <button class="tab-btn" data-tab="subjective">Subjective</button>
+                    <button class="tab-btn" data-tab="solutions">Solutions</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tab-explanation">
+                        <div class="content-card" id="explanationContent">
+                            <h3>📖 Detailed Explanation</h3>
+                            <div class="content-body"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-summary">
+                        <div class="content-card" id="summaryContent">
+                            <h3>📝 Summary</h3>
+                            <div class="content-body"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-mcqs">
+                        <div class="content-card" id="mcqsContent">
+                            <h3>❓ Multiple Choice Questions</h3>
+                            <div class="content-body"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-subjective">
+                        <div class="content-card" id="subjectiveContent">
+                            <h3>✍️ Subjective Questions</h3>
+                            <div class="content-body"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-solutions">
+                        <div class="content-card" id="solutionsContent">
+                            <h3>✅ Solutions</h3>
+                            <div class="content-body"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-bar" id="statsBar">
+                    <span>📊 <span id="wordCount">0</span> words</span>
+                    <span>🤖 <span id="llmCalls">0</span> LLM calls</span>
+                    <span>⏱️ <span id="processingTime">0</span>s</span>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with ❤️ using LangGraph, MCP, and FastAPI</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+
+    <script>
+        // Check if user is authenticated
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    document.getElementById('userDisplay').textContent = '👤 ' + data.username;
+                    document.getElementById('userDisplay').style.display = 'inline';
+                    document.getElementById('logoutBtn').style.display = 'inline-flex';
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            window.location.href = '/api/logout';
+        });
+    </script>
+</body>
+</html>
