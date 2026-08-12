@@ -76,11 +76,6 @@ It'll be running at `http://localhost:8000`.
 
 MIT — see [LICENSE](LICENSE) for details.
 
-## Author
-
-**Ali Bahja**
-GitHub: [@alibahja](https://github.com/alibahja)
-
 ## Acknowledgements
 
 Built with [LangChain](https://www.langchain.com/) and [Groq](https://groq.com/), and the broader open-source ecosystem that makes projects like this possible to build solo.
