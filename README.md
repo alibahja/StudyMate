@@ -55,7 +55,6 @@ Create a `.env` file in the project root:
 ```env
 DATABASE_URL=postgresql://user:password@host:port/database
 GROQ_API_KEY=your_groq_api_key
-SECRET_KEY=your_secret_key
 ```
 
 Set up the database by running the SQL in the project docs to create the `users`, `sessions`, and `study_sessions` tables, then start the app:
